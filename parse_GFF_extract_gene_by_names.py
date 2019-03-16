@@ -23,6 +23,7 @@ parser.add_argument('-f', help='feature type, e.g. gene')
 
 args = parser.parse_args()
 args_dict=vars(args) # convert namespace(args) to dict style
+gff=args_dict['g'] #extract the file option value from dict
 keyword=args_dict['k'] #extract the file option value from dict
 keyword_nospace=re.sub("\s|\t","_",keyword)
 
