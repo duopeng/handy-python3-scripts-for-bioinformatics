@@ -51,7 +51,7 @@ NAME_pattern = re.compile('Name=(.+?)(;|$)',re.IGNORECASE)
 def main():
 	try: 
 		## go through gff file
-		with open(gff, "rU") as handle, open("{}.{}.{}.tab".format(gff,feature_type,keyword_nospace),"w") as writehandle : 
+		with open(gff, "rU") as handle, open("{}.{}.{}.tab".format(gff,feature_type,keyword_nospace),"w") as writehandle, open("{}.{}.{}.gff".format(gff,feature_type,keyword_nospace),"w") as writegffhandle : 
 			writehandle.write("chr\tstart\tend\tstrand\tgeneID\tngeneName\n")
 			for line_raw in handle:
 				if (not (re.search(feature_type_pattern,line_raw) is None)):
@@ -75,6 +75,7 @@ def main():
 							strand=fields[6]
 							#print("{} {} {} {}\n".format(chr,start,end,strand))
 							writehandle.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,start,end,strand,gene_ID,NAME))
+							writegffhandle.write("{}\n".format(line_raw.strip()))
 						else:
 							print("error getting ID or name from line:{}".format(line_raw))
 						#gene_ID=re.sub("-..$",'',gene_ID)
