@@ -6,7 +6,7 @@ import linecache
 import re
 from Bio import SeqIO
 import collections
-
+import subprocess
 ##############
 ## arguments##
 ##############
@@ -87,6 +87,13 @@ def main():
 		
 		###go through a dir
 		for filename in os.listdir(input_folder):
+		
+		###make dir
+		os.mkdir
+		
+		###check dir
+		os.path.isdir("/home/el")
+		os.path.exists("/home/el/myfile.txt")
 		
 		## call system command
 		subprocess.call("python3 find_primer_copynum.py --fa allRepeats.fa --p {}/{} &".format(indir,filename), shell=True ) # run in background
