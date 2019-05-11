@@ -5,7 +5,7 @@ import glob
 import argparse
 import sys
 import linecache
-path = '/n/scratch2/dp235'
+
 import subprocess
 
 ##############
@@ -22,11 +22,13 @@ parser.add_argument('--path', help='path')
 
 args = parser.parse_args()
 args_dict=vars(args) # convert namespace(args) to dict style
+path=''
 path=args_dict['path'] #extract the file option value from dict
-#if len(sys.argv)==1: # print help message if arguments are not valid
+if len(sys.argv)==1: # print help message if arguments are not valid
+	path = '/n/scratch2/dp235'
+	print("no path argument supplied, using default path /n/scratch2/dp235")
 #    parser.print_help()
 #    sys.exit(1)
-
 
 def main():
 	try: 
