@@ -45,9 +45,9 @@ def main():
 						hsp_hitseq=hsp.hit
 						hsp_alnlen=hsp.aln_span
 						percent_ident=100*hsp_identicalnum/hsp_alnlen
-						query_coverage=(hsp_queryend-hsp_querystart)/query_len
-						hit_coverage=(hsp_hitend-hsp_hitstart)/hit_len
-						writefilehandle.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(query_id,query_len,hsp_querystart,hsp_queryend,hsp_queryframe,query_coverage,hit_acc,hit_desc,hit_id,hit_len,hsp_hitstart,hsp_hitend,hsp_hitframe,hit_coverage,hsp_eval,percent_ident,hsp_gapnum))#write current hsp to output file
+						query_coverage=(int(hsp_queryend)-int(hsp_querystart))/int(query_len)
+						hit_coverage=(int(hsp_hitend)-int(hsp_hitstart))/int(hit_len)
+						writefilehandle.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(query_id,query_len,hsp_querystart,hsp_queryend,hsp_queryframe,str(query_coverage),hit_acc,hit_desc,hit_id,hit_len,hsp_hitstart,hsp_hitend,hsp_hitframe,str(hit_coverage),hsp_eval,str(percent_ident),hsp_gapnum))#write current hsp to output file
 	except Exception  as e:
 		print("Unexpected error:", str(sys.exc_info()))
 		print("additional information:", e)
