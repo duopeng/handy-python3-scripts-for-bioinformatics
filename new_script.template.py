@@ -65,8 +65,7 @@ def main():
 	
 		##reverse complement
 		from Bio.Seq import Seq
-		seq = Seq("TCGGGCCC")
-		print str(seq.reverse_complement())
+		seq=str(Seq(seq).reverse_complement())
 		# GGGCCCGA
 		
 		##find text occurrence
