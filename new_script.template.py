@@ -5,6 +5,7 @@ import sys
 import linecache
 import re
 from Bio import SeqIO
+
 import collections
 import subprocess
 ##############
@@ -67,6 +68,12 @@ def main():
 		from Bio.Seq import Seq
 		seq=str(Seq(seq).reverse_complement())
 		# GGGCCCGA
+		
+		##translation
+		from Bio.Seq import Seq
+		from Bio.Alphabet import IUPAC
+		coding_dna = Seq("ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG", IUPAC.unambiguous_dna)
+		coding_dna.translate(to_stop=True)
 		
 		##find text occurrence
 		patterntext=re.escape("text")
