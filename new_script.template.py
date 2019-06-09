@@ -82,8 +82,11 @@ def main():
 		##Or
 		if (re.search("NNNNNNNNNN",seq[extract_start:extract_end+1],flags=re.IGNORECASE) is None):
 		
-		#substitution
+		##substitution
 		pattern.sub(replacement,string)
+		
+		## extract number from desc=">CurContig109_quiver_pilon_pilon_pilon_pilon_691221_694381_1 | FPrate:0.100 | OMEGA:H-1027"
+		FPrate = desc.split("|")[1].lstrip().rstrip().split(":")[1]
 		
 		##sort dict based on value
 		for match in sorted(match_dict, key=match_dict.get, reverse=True):
