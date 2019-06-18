@@ -54,6 +54,18 @@ def main():
 		# or else another local variable named myGlobalVariable will be created
 		#To rebind variables found outside of the innermost scope, the nonlocal statement can be used; if not declared nonlocal, those variables are read-only (an attempt to write to such a variable will simply create a new local variable in the innermost scope, leaving the identically named outer variable unchanged).
 		
+		
+		##make output folder
+		output_dir_path_xml="{}_classified_xml".format(dir.rstrip("/"))
+		if (not os.path.exists(output_dir_path_xml)): #output doesn't exist
+		  os.mkdir(output_dir_path_xml)
+		elif (not os.path.isdir(output_dir_path_xml)): #output is not a dir
+		  os.remove(output_dir_path_xml)
+		  os.mkdir(output_dir_path_xml)
+		else: #output is a dir
+		  shutil.rmtree(output_dir_path_xml)
+		  os.mkdir(output_dir_path_xml)
+  
 		## go through a text file
 		with open(input_file, "rU") as handle: # rU means open for reading using universal readline mode this means you dont have to worry if the file uses Unix, Mac or DOS Windows style newline characters The with- statement makes sure that the file is properly closed after reading it
 			for line_raw in handle:
