@@ -1,0 +1,431 @@
+
+   Trees   	   Indices   	   Help   	
+Biopython
+Package Bio :: Package SearchIO :: Package BlastIO	
+[hide private]
+[frames] | no frames]
+Source Code for Package Bio.SearchIO.BlastIO
+  1  # Copyright 2012 by Wibowo Arindrarto.  All rights reserved. 
+  2  # 
+  3  # This file is part of the Biopython distribution and governed by your 
+  4  # choice of the "Biopython License Agreement" or the "BSD 3-Clause License". 
+  5  # Please see the LICENSE file that should have been included as part of this 
+  6  # package. 
+  7   
+  8  """Bio.SearchIO support for BLAST+ output formats. 
+  9   
+ 10  This module adds support for parsing BLAST+ outputs. BLAST+ is a rewrite of 
+ 11  NCBI's legacy BLAST (Basic Local Alignment Search Tool), based on the NCBI 
+ 12  C++ toolkit. The BLAST+ suite is available as command line programs or on 
+ 13  NCBI's web page. 
+ 14   
+ 15  Bio.SearchIO.BlastIO was tested on the following BLAST+ flavors and versions: 
+ 16   
+ 17      - flavors: blastn, blastp, blastx, tblastn, tblastx 
+ 18      - versions: 2.2.22+, 2.2.26+ 
+ 19   
+ 20  You should also be able to parse outputs from a local BLAST+ search or from 
+ 21  NCBI's web interface. Although the module was not tested against all BLAST+, 
+ 22  it should still be able to parse these other versions' outputs. Please submit 
+ 23  a bug report if you stumble upon an unparseable file. 
+ 24   
+ 25  Some output formats from the BLAST legacy suite (BLAST+'s predecessor) may 
+ 26  still be parsed by this module. However, results are not guaranteed. You may 
+ 27  try to use the Bio.Blast module to parse them instead. 
+ 28   
+ 29  More information about BLAST are available through these links: 
+ 30    - Publication: http://www.biomedcentral.com/1471-2105/10/421 
+ 31    - Web interface: http://blast.ncbi.nlm.nih.gov/ 
+ 32    - User guide: http://www.ncbi.nlm.nih.gov/books/NBK1762/ 
+ 33   
+ 34   
+ 35  Supported Formats 
+ 36  ================= 
+ 37   
+ 38  Bio.SearchIO.BlastIO supports the following BLAST+ output formats: 
+ 39   
+ 40    - XML        - 'blast-xml'  - parsing, indexing, writing 
+ 41    - Tabular    - 'blast-tab'  - parsing, indexing, writing 
+ 42    - Plain text - 'blast-text' - parsing 
+ 43   
+ 44   
+ 45  blast-xml 
+ 46  ========= 
+ 47   
+ 48  The blast-xml parser follows the BLAST XML DTD written here: 
+ 49  http://www.ncbi.nlm.nih.gov/dtd/NCBI_BlastOutput.mod.dtd 
+ 50   
+ 51  It provides the following attributes for each SearchIO object: 
+ 52   
+ 53  +----------------+-------------------------+-----------------------------+ 
+ 54  | Object         | Attribute               | XML Element                 | 
+ 55  +================+=========================+=============================+ 
+ 56  | QueryResult    | target                  | BlastOutput_db              | 
+ 57  |                +-------------------------+-----------------------------+ 
+ 58  |                | program                 | BlastOutput_program         | 
+ 59  |                +-------------------------+-----------------------------+ 
+ 60  |                | reference               | BlastOutput_reference       | 
+ 61  |                +-------------------------+-----------------------------+ 
+ 62  |                | version                 | BlastOutput_version [*]_    | 
+ 63  |                +-------------------------+-----------------------------+ 
+ 64  |                | description             | Iteration_query-def         | 
+ 65  |                +-------------------------+-----------------------------+ 
+ 66  |                | id                      | Iteration_query-ID          | 
+ 67  |                +-------------------------+-----------------------------+ 
+ 68  |                | seq_len                 | Iteration_query-len         | 
+ 69  |                +-------------------------+-----------------------------+ 
+ 70  |                | param_evalue_threshold  | Parameters_expect           | 
+ 71  |                +-------------------------+-----------------------------+ 
+ 72  |                | param_entrez_query      | Parameters_entrez-query     | 
+ 73  |                +-------------------------+-----------------------------+ 
+ 74  |                | param_filter            | Parameters_filter           | 
+ 75  |                +-------------------------+-----------------------------+ 
+ 76  |                | param_gap_extend        | Parameters_gap-extend       | 
+ 77  |                +-------------------------+-----------------------------+ 
+ 78  |                | param_gap_open          | Parameters_gap-open         | 
+ 79  |                +-------------------------+-----------------------------+ 
+ 80  |                | param_include           | Parameters_include          | 
+ 81  |                +-------------------------+-----------------------------+ 
+ 82  |                | param_matrix            | Parameters_matrix           | 
+ 83  |                +-------------------------+-----------------------------+ 
+ 84  |                | param_pattern           | Parameters_pattern          | 
+ 85  |                +-------------------------+-----------------------------+ 
+ 86  |                | param_score_match       | Parameters_sc-match         | 
+ 87  |                +-------------------------+-----------------------------+ 
+ 88  |                | param_score_mismatch    | Parameters_sc-mismatch      | 
+ 89  |                +-------------------------+-----------------------------+ 
+ 90  |                | stat_db_num             | Statistics_db-num           | 
+ 91  |                +-------------------------+-----------------------------+ 
+ 92  |                | stat_db_len             | Statistics_db-len           | 
+ 93  |                +-------------------------+-----------------------------+ 
+ 94  |                | stat_eff_space          | Statistics_eff-space        | 
+ 95  |                +-------------------------+-----------------------------+ 
+ 96  |                | stat_entropy            | Statistics_entropy          | 
+ 97  |                +-------------------------+-----------------------------+ 
+ 98  |                | stat_hsp_len            | Statistics_hsp-len          | 
+ 99  |                +-------------------------+-----------------------------+ 
+100  |                | stat_kappa              | Statistics_kappa            | 
+101  |                +-------------------------+-----------------------------+ 
+102  |                | stat_lambda             | Statistics_lambda           | 
+103  +----------------+-------------------------+-----------------------------+ 
+104  | Hit            | accession               | Hit_accession               | 
+105  |                +-------------------------+-----------------------------+ 
+106  |                | description             | Hit_def                     | 
+107  |                +-------------------------+-----------------------------+ 
+108  |                | id                      | Hit_id                      | 
+109  |                +-------------------------+-----------------------------+ 
+110  |                | seq_len                 | Hit_len                     | 
+111  +----------------+-------------------------+-----------------------------+ 
+112  | HSP            | bitscore                | Hsp_bit-score               | 
+113  |                +-------------------------+-----------------------------+ 
+114  |                | density                 | Hsp_density                 | 
+115  |                +-------------------------+-----------------------------+ 
+116  |                | evalue                  | Hsp_evalue                  | 
+117  |                +-------------------------+-----------------------------+ 
+118  |                | gap_num                 | Hsp_gaps                    | 
+119  |                +-------------------------+-----------------------------+ 
+120  |                | ident_num               | Hsp_identity                | 
+121  |                +-------------------------+-----------------------------+ 
+122  |                | pos_num                 | Hsp_positive                | 
+123  |                +-------------------------+-----------------------------+ 
+124  |                | bitscore_raw            | Hsp_score                   | 
+125  +----------------+-------------------------+-----------------------------+ 
+126  | HSPFragment    | aln_span                | Hsp_align-len               | 
+127  | (also via      +-------------------------+-----------------------------+ 
+128  | HSP)           | hit_frame               | Hsp_hit-frame               | 
+129  |                +-------------------------+-----------------------------+ 
+130  |                | hit_start               | Hsp_hit-from                | 
+131  |                +-------------------------+-----------------------------+ 
+132  |                | hit_end                 | Hsp_hit-to                  | 
+133  |                +-------------------------+-----------------------------+ 
+134  |                | hit                     | Hsp_hseq                    | 
+135  |                +-------------------------+-----------------------------+ 
+136  |                | aln_annotation          | Hsp_midline                 | 
+137  |                +-------------------------+-----------------------------+ 
+138  |                | pattern_start           | Hsp_pattern-from            | 
+139  |                +-------------------------+-----------------------------+ 
+140  |                | pattern_end             | Hsp_pattern-to              | 
+141  |                +-------------------------+-----------------------------+ 
+142  |                | query_frame             | Hsp_query-frame             | 
+143  |                +-------------------------+-----------------------------+ 
+144  |                | query_start             | Hsp_query-from              | 
+145  |                +-------------------------+-----------------------------+ 
+146  |                | query_end               | Hsp_query-to                | 
+147  |                +-------------------------+-----------------------------+ 
+148  |                | query                   | Hsp_qseq                    | 
+149  +----------------+-------------------------+-----------------------------+ 
+150   
+151  You may notice that in BLAST XML files, sometimes BLAST replaces your true 
+152  sequence ID with its own generated ID. For example, the query IDs become 
+153  'Query_1', 'Query_2', and so on. While the hit IDs sometimes become 
+154  'gnl|BL_ORD_ID|1', 'gnl|BL_ORD_ID|2', and so on. In these cases, BLAST lumps the 
+155  true sequence IDs together with their descriptions. 
+156   
+157  The blast-xml parser is aware of these modifications and will attempt to extract 
+158  the true sequence IDs out of the descriptions. So when accessing QueryResult or 
+159  Hit objects, you will use the non-BLAST-generated IDs. 
+160   
+161  This behavior on the query IDs can be disabled using the 'use_raw_query_ids' 
+162  parameter while the behavior on the hit IDs can be disabled using the 
+163  'use_raw_hit_ids' parameter. Both are boolean values that can be supplied 
+164  to SearchIO.read or SearchIO.parse, with the default values set to 'False'. 
+165   
+166  In any case, the raw BLAST IDs can always be accessed using the query or hit 
+167  object's 'blast_id' attribute. 
+168   
+169  The blast-xml write function also accepts 'use_raw_query_ids' and 
+170  'use_raw_hit_ids' parameters. However, note that the default values for the 
+171  writer are set to 'True'. This is because the writer is meant to mimic native 
+172  BLAST result as much as possible. 
+173   
+174   
+175  blast-tab 
+176  ========= 
+177   
+178  The default format for blast-tab support is the variant without comments (-m 6 
+179  flag). Commented BLAST tabular files may be parsed, indexed, or written using 
+180  the keyword argument 'comments' set to True: 
+181   
+182      >>> # blast-tab defaults to parsing uncommented files 
+183      >>> from Bio import SearchIO 
+184      >>> uncommented = 'Blast/tab_2226_tblastn_004.txt' 
+185      >>> qresult = SearchIO.read(uncommented, 'blast-tab') 
+186      >>> qresult 
+187      QueryResult(id='gi|11464971:4-101', 5 hits) 
+188   
+189      >>> # set the keyword argument to parse commented files 
+190      >>> commented = 'Blast/tab_2226_tblastn_008.txt' 
+191      >>> qresult = SearchIO.read(commented, 'blast-tab', comments=True) 
+192      >>> qresult 
+193      QueryResult(id='gi|11464971:4-101', 5 hits) 
+194   
+195  For uncommented files, the parser defaults to using BLAST's default column 
+196  ordering: 'qseqid sseqid pident length mismatch gapopen qstart qend sstart send 
+197  evalue bitscore'. 
+198   
+199  If you want to parse an uncommented file with a customized column order, you can 
+200  use the 'fields' keyword argument to pass the custom column order. The names of 
+201  the column follow BLAST's naming. For example, 'qseqid' is the column for the 
+202  query sequence ID. These names may be passed either as a Python list or as a 
+203  space-separated strings. 
+204   
+205      >>> # pass the custom column names as a Python list 
+206      >>> fname = 'Blast/tab_2226_tblastn_009.txt' 
+207      >>> custom_fields = ['qseqid', 'sseqid'] 
+208      >>> qresult = next(SearchIO.parse(fname, 'blast-tab', fields=custom_fields)) 
+209      >>> qresult 
+210      QueryResult(id='gi|16080617|ref|NP_391444.1|', 3 hits) 
+211   
+212      >>> # pass the custom column names as a space-separated string 
+213      >>> fname = 'Blast/tab_2226_tblastn_009.txt' 
+214      >>> custom_fields = 'qseqid sseqid' 
+215      >>> qresult = next(SearchIO.parse(fname, 'blast-tab', fields=custom_fields)) 
+216      >>> qresult 
+217      QueryResult(id='gi|16080617|ref|NP_391444.1|', 3 hits) 
+218   
+219  You may also use the 'std' field name as an alias to BLAST's default 12 columns, 
+220  just like when you run a command line BLAST search. 
+221   
+222  Note that the 'fields' keyword argument will be ignored if the parsed file is 
+223  commented. Commented files have their column ordering stated explicitly in the 
+224  file, so there is no need to specify it again in SearchIO. 
+225   
+226  'comments' and 'fields' keyword arguments are both applicable for parsing, 
+227  indexing, and writing. 
+228   
+229  blast-tab provides the following attributes for each SearchIO objects: 
+230   
+231  +-------------+-------------------+--------------+ 
+232  | Object      | Attribute         | Column name  | 
+233  +=============+===================+==============+ 
+234  | QueryResult | accession         | qacc         | 
+235  |             +-------------------+--------------+ 
+236  |             | accession_version | qaccver      | 
+237  |             +-------------------+--------------+ 
+238  |             | gi                | qgi          | 
+239  |             +-------------------+--------------+ 
+240  |             | seq_len           | qlen         | 
+241  |             +-------------------+--------------+ 
+242  |             | id                | qseqid       | 
+243  +-------------+-------------------+--------------+ 
+244  | Hit         | accession         | sacc         | 
+245  |             +-------------------+--------------+ 
+246  |             | accession_version | sacc_ver     | 
+247  |             +-------------------+--------------+ 
+248  |             | gi                | sgi          | 
+249  |             +-------------------+--------------+ 
+250  |             | gi_all            | sallgi       | 
+251  |             +-------------------+--------------+ 
+252  |             | id_all            | sallseqid    | 
+253  |             +-------------------+--------------+ 
+254  |             | seq_len           | slen         | 
+255  |             +-------------------+--------------+ 
+256  |             | id                | sseqid       | 
+257  +-------------+-------------------+--------------+ 
+258  | HSP         | bitscore          | bitscore     | 
+259  |             +-------------------+--------------+ 
+260  |             | btop              | btop         | 
+261  |             +-------------------+--------------+ 
+262  |             | evalue            | evalue       | 
+263  |             +-------------------+--------------+ 
+264  |             | gapopen_num       | gapopen      | 
+265  |             +-------------------+--------------+ 
+266  |             | gap_num           | gaps         | 
+267  |             +-------------------+--------------+ 
+268  |             | ident_num         | nident       | 
+269  |             +-------------------+--------------+ 
+270  |             | ident_pct         | pident       | 
+271  |             +-------------------+--------------+ 
+272  |             | mismatch_num      | mismatch     | 
+273  |             +-------------------+--------------+ 
+274  |             | pos_pct           | ppos         | 
+275  |             +-------------------+--------------+ 
+276  |             | pos_num           | positive     | 
+277  |             +-------------------+--------------+ 
+278  |             | bitscore_raw      | score        | 
+279  +-------------+-------------------+--------------+ 
+280  | HSPFragment | frames            | frames [*]_  | 
+281  | (also via   +-------------------+--------------+ 
+282  | HSP)        | aln_span          | length       | 
+283  |             +-------------------+--------------+ 
+284  |             | query_end         | qend         | 
+285  |             +-------------------+--------------+ 
+286  |             | query_frame       | qframe       | 
+287  |             +-------------------+--------------+ 
+288  |             | query             | qseq         | 
+289  |             +-------------------+--------------+ 
+290  |             | query_start       | qstart       | 
+291  |             +-------------------+--------------+ 
+292  |             | hit_end           | send         | 
+293  |             +-------------------+--------------+ 
+294  |             | hit_frame         | sframe       | 
+295  |             +-------------------+--------------+ 
+296  |             | hit               | sseq         | 
+297  |             +-------------------+--------------+ 
+298  |             | hit_start         | sstart       | 
+299  +-------------+-------------------+--------------+ 
+300   
+301  If the parsed file is commented, the following attributes may be available as 
+302  well: 
+303   
+304  +--------------+---------------+----------------------------+ 
+305  | Object       | Attribute     | Value                      | 
+306  +==============+===============+============================+ 
+307  | QueryResult  | description   | query description          | 
+308  |              +---------------+----------------------------+ 
+309  |              | fields        | columns in the output file | 
+310  |              +---------------+----------------------------+ 
+311  |              | program       | BLAST flavor               | 
+312  |              +---------------+----------------------------+ 
+313  |              | rid           | remote search ID           | 
+314  |              +---------------+----------------------------+ 
+315  |              | target        | target database            | 
+316  |              +---------------+----------------------------+ 
+317  |              | version       | BLAST version              | 
+318  +--------------+---------------+----------------------------+ 
+319   
+320   
+321  blast-text 
+322  ========== 
+323  The BLAST plain text output format has been known to change considerably between 
+324  BLAST versions. NCBI itself has recommended that users not rely on the plain 
+325  text output for parsing-related work. 
+326   
+327  However, in some cases parsing the plain text output may still be useful. 
+328  SearchIO provides parsing support for the plain text output, but guarantees only 
+329  a minimum level of support. Writing a parser that fully supports plain text 
+330  output for all BLAST versions is not a priority at the moment. 
+331   
+332  If you do have a BLAST plain text file that can not be parsed and would like to 
+333  submit a patch, we are more than happy to accept it. 
+334   
+335  The blast-text parser provides the following object attributes: 
+336   
+337  +-----------------+-------------------------+----------------------------------+ 
+338  | Object          | Attribute               | Value                            | 
+339  +=================+=========================+==================================+ 
+340  | QueryResult     | description             | query sequence description       | 
+341  |                 +-------------------------+----------------------------------+ 
+342  |                 | id                      | query sequence ID                | 
+343  |                 +-------------------------+----------------------------------+ 
+344  |                 | program                 | BLAST flavor                     | 
+345  |                 +-------------------------+----------------------------------+ 
+346  |                 | seq_len                 | full length of query sequence    | 
+347  |                 +-------------------------+----------------------------------+ 
+348  |                 | target                  | target database of the search    | 
+349  |                 +-------------------------+----------------------------------+ 
+350  |                 | version                 | BLAST version                    | 
+351  +-----------------+-------------------------+----------------------------------+ 
+352  | Hit             | evalue                  | hit-level evalue, from the hit   | 
+353  |                 |                         | table                            | 
+354  |                 +-------------------------+----------------------------------+ 
+355  |                 | id                      | hit sequence ID                  | 
+356  |                 +-------------------------+----------------------------------+ 
+357  |                 | description             | hit sequence description         | 
+358  |                 +-------------------------+----------------------------------+ 
+359  |                 | score                   | hit-level score, from the hit    | 
+360  |                 |                         | table                            | 
+361  |                 +-------------------------+----------------------------------+ 
+362  |                 | seq_len                 | full length of hit sequence      | 
+363  +-----------------+-------------------------+----------------------------------+ 
+364  | HSP             | evalue                  | hsp-level evalue                 | 
+365  |                 +-------------------------+----------------------------------+ 
+366  |                 | bitscore                | hsp-level bit score              | 
+367  |                 +-------------------------+----------------------------------+ 
+368  |                 | bitscore_raw            | hsp-level score                  | 
+369  |                 +-------------------------+----------------------------------+ 
+370  |                 | gap_num                 | number of gaps in alignment      | 
+371  |                 +-------------------------+----------------------------------+ 
+372  |                 | ident_num               | number of identical residues     | 
+373  |                 |                         | in alignment                     | 
+374  |                 +-------------------------+----------------------------------+ 
+375  |                 | pos_num                 | number of positive matches in    | 
+376  |                 |                         | alignment                        | 
+377  +-----------------+-------------------------+----------------------------------+ 
+378  | HSPFragment     | aln_annotation          | alignment similarity string      | 
+379  | (also via       +-------------------------+----------------------------------+ 
+380  | HSP)            | aln_span                | length of alignment fragment     | 
+381  |                 +-------------------------+----------------------------------+ 
+382  |                 | hit                     | hit sequence                     | 
+383  |                 +-------------------------+----------------------------------+ 
+384  |                 | hit_end                 | hit sequence end coordinate      | 
+385  |                 +-------------------------+----------------------------------+ 
+386  |                 | hit_frame               | hit sequence reading frame       | 
+387  |                 +-------------------------+----------------------------------+ 
+388  |                 | hit_start               | hit sequence start coordinate    | 
+389  |                 +-------------------------+----------------------------------+ 
+390  |                 | hit_strand              | hit sequence strand              | 
+391  |                 +-------------------------+----------------------------------+ 
+392  |                 | query                   | query sequence                   | 
+393  |                 +-------------------------+----------------------------------+ 
+394  |                 | query_end               | query sequence end coordinate    | 
+395  |                 +-------------------------+----------------------------------+ 
+396  |                 | query_frame             | query sequence reading frame     | 
+397  |                 +-------------------------+----------------------------------+ 
+398  |                 | query_start             | query sequence start coordinate  | 
+399  |                 +-------------------------+----------------------------------+ 
+400  |                 | query_strand            | query sequence strand            | 
+401  +-----------------+-------------------------+----------------------------------+ 
+402   
+403   
+404  .. [*] may be modified 
+405   
+406  .. [*] When 'frames' is present, both ``query_frame`` and ``hit_frame`` will be 
+407     present as well. It is recommended that you use these instead of 'frames' directly. 
+408   
+409  """ 
+410   
+411  from .blast_tab import BlastTabParser, BlastTabIndexer, BlastTabWriter 
+412  from .blast_xml import BlastXmlParser, BlastXmlIndexer, BlastXmlWriter 
+413  from .blast_text import BlastTextParser 
+414   
+415   
+416  # if not used as a module, run the doctest 
+417  if __name__ == "__main__": 
+418      from Bio._utils import run_doctest 
+419      run_doctest() 
+420   
+
+   Trees   	   Indices   	   Help   	
+Biopython
+Generated by Epydoc 3.0.1 on Fri Jun 22 16:36:09 2018	http://epydoc.sourceforge.net
