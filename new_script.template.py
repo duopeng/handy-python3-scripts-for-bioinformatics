@@ -68,11 +68,11 @@ def main():
 		  os.mkdir(output_dir_path_xml)
   
 		## go through a text file
-		with open(input_file, "rU") as handle: # rU means open for reading using universal readline mode this means you dont have to worry if the file uses Unix, Mac or DOS Windows style newline characters The with- statement makes sure that the file is properly closed after reading it
+		with open(input_file, "r", encoding="utf-8") as handle: 
 			for line_raw in handle:
 				lineSplitArray=re.split(",",line_raw.strip())
 		## go through fasta file
-		with open(input_fastafile, "rU") as handle, open("{}.primers.copynum.tab".format(input_fastafile),'w') as writehandle: # rU means open for reading using universal readline mode this means you dont have to worry if the file uses Unix, Mac or DOS Windows style newline characters The with- statement makes sure that the file is properly closed after reading it
+		with open(input_fastafile, "r", encoding="utf-8") as handle, open("{}.primers.copynum.tab".format(input_fastafile),'w') as writehandle: 
 			fasta_sequences = SeqIO.parse(handle,'fasta')
 			for entry in fasta_sequences:
 				name, desc,seq = entry.id, entry.description, str(entry.seq)
