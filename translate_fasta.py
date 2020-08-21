@@ -53,7 +53,6 @@ def main():
 					#print(coding_dna)
 					seq_translation=str(coding_dna.translate(to_stop=True))
 					if len(seq_translation)>=int(lengthcutoff):
-						#print(name)
 						writehandle.write(">{}\n{}\n".format(name,seq_translation))
 		
 	except Exception  as e:

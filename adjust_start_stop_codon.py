@@ -7,7 +7,8 @@ import sys
 from collections import defaultdict
 import re
 import linecache
-
+from Bio.Seq import Seq
+from Bio.Alphabet import generic_dna
 
 
 ##############

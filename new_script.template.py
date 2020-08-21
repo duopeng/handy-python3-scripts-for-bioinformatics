@@ -38,6 +38,9 @@ if len(sys.argv)==1: # print help message if arguments are not valid
 list_dict=defaultdict(dict) ## initialized a multi-dimension dict
 
 ## defined pattern that needs to be searched in the main program
+startcodonpattern=re.compile("^ATG", flags=re.IGNORECASE)
+stopcodonpattern=re.compile("(TGA$)|(TAG$)|(TAA$)", flags=re.IGNORECASE)
+startstopcodonpattern=re.compile("^ATG.+((TGA$)|(TAG$)|(TAA$))", flags=re.IGNORECASE)
 ID_pattern = re.compile('ID=(.+?)(?:\.|:|;|$)')
 parent_pattern = re.compile('Parent=(.+?)(?:\.|:|;|$)')
 
@@ -54,7 +57,6 @@ def main():
 		myGlobalVariable=1
 		# or else another local variable named myGlobalVariable will be created
 		#To rebind variables found outside of the innermost scope, the nonlocal statement can be used; if not declared nonlocal, those variables are read-only (an attempt to write to such a variable will simply create a new local variable in the innermost scope, leaving the identically named outer variable unchanged).
-		
 		
 		##make output folder
 		output_dir_path_xml="{}_classified_xml".format(dir.rstrip("/"))
@@ -116,6 +118,31 @@ def main():
 		###check dir
 		os.path.isdir("/home/el")
 		os.path.exists("/home/el/myfile.txt")
+        
+        #translate DNA
+        coding_dna=Seq(seq,generic_dna)
+        if (not (re.search(startcodonpattern,str(coding_dna)) is None)):
+            #print(coding_dna)
+            seq_translation=str(coding_dna.translate(to_stop=True))
+            if len(seq_translation)>=int(lengthcutoff):
+                writehandle.write(">{}\n{}\n".format(name,seq_translation))
+        
+        ##count start stop stats
+		with open("stats.final.txt", "a") as writehandle, open("{}.adjusted.fasta".format(input_fastafile),'r') as infilehandle:
+			genecount=len(re.findall('^>',infilehandle.read(),re.MULTILINE))
+			infilehandle.seek(0)
+			startcount=len(re.findall('^ATG',infilehandle.read(),re.MULTILINE | re.IGNORECASE))
+			infilehandle.seek(0)
+			endcount=len(re.findall('(TGA$)|(TAG$)|(TAA$)',infilehandle.read(),re.MULTILINE | re.IGNORECASE))
+			infilehandle.seek(0)
+			startendcount=len(re.findall('^ATG.+((TGA$)|(TAG$)|(TAA$))',infilehandle.read(),re.MULTILINE | re.IGNORECASE))
+			writehandle.write("\n{}\n\n{}\n{}\n{}\n".format(genecount,startendcount,startcount,endcount))	
+				#if (not (re.search(startcodonpattern,str(coding_dna)) is None)):
+				#	#print(coding_dna)
+				#	seq_translation=str(coding_dna.translate(to_stop=True))
+				#	if len(seq_translation)>=int(lengthcutoff):
+				#		#print(name)
+				#		writehandle.write(">{}\n{}\n".format(name,seq_translation))
 		
 		## call system command
 		subprocess.call("python3 find_primer_copynum.py --fa allRepeats.fa --p {}/{} &".format(indir,filename), shell=True ) # run in background
