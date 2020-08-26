@@ -54,16 +54,16 @@ def main():
     try: 
 
         ##make output folder
-        output_dir_path_xml="{}_classified_xml".format(dir.rstrip("/"))
-        if (not os.path.exists(output_dir_path_xml)): #output doesn't exist
-          os.mkdir(output_dir_path_xml)
-        elif (not os.path.isdir(output_dir_path_xml)): #output is not a dir
-          os.remove(output_dir_path_xml)
-          os.mkdir(output_dir_path_xml)
+        outdir="{}_merge_out".format(indir.rstrip("/"))
+        if (not os.path.exists(outdir)): #output doesn't exist
+          os.mkdir(outdir)
+        elif (not os.outdir.isdir(outdir)): #output is not a dir
+          os.remove(outdir)
+          os.mkdir(outdir)
         else: #output is a dir
-          shutil.rmtree(output_dir_path_xml)
-          os.mkdir(output_dir_path_xml)
-  
+          shutil.rmtree(outdir)
+          os.mkdir(outdir)
+          
         ## go through a text file
         with open(input_file, "r", encoding="utf-8") as handle: 
             for line_raw in handle:
