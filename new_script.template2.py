@@ -9,7 +9,8 @@ from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
 import collections
 import subprocess
-
+import os
+import shutil
 ##############
 ## arguments##
 ##############
@@ -57,12 +58,13 @@ def main():
         outdir="{}_merge_out".format(indir.rstrip("/"))
         if (not os.path.exists(outdir)): #output doesn't exist
           os.mkdir(outdir)
-        elif (not os.outdir.isdir(outdir)): #output is not a dir
+        elif (not os.path.isdir(outdir)): #output is not a dir
           os.remove(outdir)
           os.mkdir(outdir)
         else: #output is a dir
           shutil.rmtree(outdir)
           os.mkdir(outdir)
+          
           
         ## go through a text file
         with open(input_file, "r", encoding="utf-8") as handle: 
