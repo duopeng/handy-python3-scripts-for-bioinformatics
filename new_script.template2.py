@@ -65,6 +65,9 @@ def main():
           shutil.rmtree(outdir)
           os.mkdir(outdir)
           
+        ## progress bar of loops
+        from tqdm import tqdm
+        for i in tqdm(range(len(paths))):
           
         ## go through a text file
         with open(input_file, "r", encoding="utf-8") as handle: 
